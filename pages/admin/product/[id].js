@@ -101,21 +101,27 @@ function ProductEdit({ params }) {
       fetchData();
     }
   }, []);
+
   const uploadHandler = async (e, imageField = 'image') => {
-    const file = e.target.files[0];
-    const bodyFormData = new FormData();
-    bodyFormData.append('file', file);
+    const url = `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/upload`;
     try {
       dispatch({ type: 'UPLOAD_REQUEST' });
-      const { data } = await axios.post('/api/admin/upload', bodyFormData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          authorization: `Bearer ${userInfo.token}`,
-        },
-      });
+      const {
+        data: { signature, timestamp },
+      } = await axios('/api/keys/cloudinary-sign');
+
+      const file = await e.target.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('signature', signature);
+      formData.append('timestamp', timestamp);
+      formData.append('api_key', process.env.CLOUDINARY_API_KEY);
+
+      const { data } = await axios.post(url, formData);
+
       dispatch({ type: 'UPLOAD_SUCCESS' });
       setValue(imageField, data.secure_url);
-      enqueueSnackbar('File uploaded successfully', { variant: 'success' });
+      toast.success('Image uploaded successfully');
     } catch (err) {
       dispatch({ type: 'UPLOAD_FAIL', payload: getError(err) });
       enqueueSnackbar(getError(err), { variant: 'error' });

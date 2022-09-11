@@ -13,6 +13,12 @@ const data = {
       password: bcrypt.hashSync('123456'),
       isAdmin: false,
     },
+    {
+      name: 'Diego Rhoger',
+      email: 'diegorhoger@gmail.com',
+      password: bcrypt.hashSync('123456'),
+      isAdmin: true,
+    },
   ],
   products: [
     {
